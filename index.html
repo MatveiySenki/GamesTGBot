@@ -8,8 +8,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             overflow: hidden;
             background: #4ec0ca;
             font-family: Arial, sans-serif;
@@ -19,20 +18,16 @@
         }
         #gameContainer {
             position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 100%; height: 100%;
         }
         #gameCanvas {
             display: block;
+            width: 100%; height: 100%;
             background: linear-gradient(to bottom, #4ec0ca 0%, #87ceeb 70%, #ded895 100%);
         }
         #score {
             position: absolute;
-            top: 30px;
-            left: 50%;
+            top: 30px; left: 50%;
             transform: translateX(-50%);
             color: white;
             font-size: 60px;
@@ -53,16 +48,8 @@
             z-index: 20;
             padding: 20px;
         }
-        #overlay h1 { 
-            font-size: 42px; 
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        #overlay p { 
-            font-size: 22px; 
-            margin-bottom: 25px;
-            text-align: center;
-        }
+        #overlay h1 { font-size: 42px; margin-bottom: 15px; text-align: center; }
+        #overlay p { font-size: 22px; margin-bottom: 25px; text-align: center; }
         #overlay button {
             padding: 18px 50px;
             font-size: 24px;
@@ -74,10 +61,7 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-        #overlay button:active { 
-            background: #45a049;
-            transform: scale(0.95);
-        }
+        #overlay button:active { background: #45a049; transform: scale(0.95); }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -99,33 +83,24 @@
         const scoreEl = document.getElementById('score');
         const overlay = document.getElementById('overlay');
         const startBtn = document.getElementById('startBtn');
-        const container = document.getElementById('gameContainer');
         
-        // Telegram WebApp
         const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-        }
+        if (tg) { tg.ready(); tg.expand(); }
         
-        // Адаптивный размер canvas
         function resizeCanvas() {
-            const maxW = Math.min(window.innerWidth - 20, 500);
-            const maxH = window.innerHeight - 20;
-            canvas.width = maxW;
-            canvas.height = maxH;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         
-        // Игровые переменные
-        let bird, pipes, score, gameRunning, gameOver, frame, animId;
+        let bird, pipes, score, gameRunning, frame, animId;
         const GRAVITY = 0.5;
         const JUMP = -8;
         const PIPE_SPEED = 3;
         let PIPE_GAP, PIPE_WIDTH, PIPE_INTERVAL;
         
-        function init() {
+        function initGame() {
             PIPE_GAP = canvas.height * 0.25;
             PIPE_WIDTH = canvas.width * 0.12;
             PIPE_INTERVAL = 100;
@@ -139,10 +114,7 @@
             pipes = [];
             score = 0;
             frame = 0;
-            gameRunning = true;
-            gameOver = false;
             scoreEl.textContent = '0';
-            overlay.classList.add('hidden');
         }
         
         function jump() {
@@ -160,9 +132,7 @@
         
         function update() {
             if (!gameRunning) return;
-            
             frame++;
-            
             bird.vy += GRAVITY;
             bird.y += bird.vy;
             
@@ -170,7 +140,6 @@
             
             for (let pipe of pipes) {
                 pipe.x -= PIPE_SPEED;
-                
                 if (!pipe.passed && pipe.x + PIPE_WIDTH < bird.x) {
                     pipe.passed = true;
                     score++;
@@ -202,7 +171,6 @@
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Облака
             ctx.fillStyle = 'rgba(255,255,255,0.7)';
             for (let i = 0; i < 3; i++) {
                 const cx = ((frame * 0.3 + i * 180) % (canvas.width + 120)) - 60;
@@ -214,36 +182,23 @@
                 ctx.fill();
             }
             
-            // Трубы
             for (let pipe of pipes) {
                 const grad1 = ctx.createLinearGradient(pipe.x, 0, pipe.x + PIPE_WIDTH, 0);
                 grad1.addColorStop(0, '#5cb85c');
                 grad1.addColorStop(0.5, '#73d673');
                 grad1.addColorStop(1, '#4a9d4a');
                 ctx.fillStyle = grad1;
-                
-                // Верхняя
                 ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.gapY);
                 ctx.fillRect(pipe.x - 4, pipe.gapY - 20, PIPE_WIDTH + 8, 20);
-                
-                // Нижняя
                 ctx.fillRect(pipe.x, pipe.gapY + PIPE_GAP, PIPE_WIDTH, canvas.height);
                 ctx.fillRect(pipe.x - 4, pipe.gapY + PIPE_GAP, PIPE_WIDTH + 8, 20);
-                
-                // Обводка
-                ctx.strokeStyle = '#2d6b2d';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(pipe.x, 0, PIPE_WIDTH, pipe.gapY);
-                ctx.strokeRect(pipe.x, pipe.gapY + PIPE_GAP, PIPE_WIDTH, canvas.height);
             }
             
-            // Птица
             ctx.save();
             ctx.translate(bird.x, bird.y);
             const angle = Math.min(Math.max(bird.vy * 0.05, -0.5), 0.8);
             ctx.rotate(angle);
             
-            // Тело
             ctx.fillStyle = '#ffd700';
             ctx.beginPath();
             ctx.arc(0, 0, bird.radius, 0, Math.PI * 2);
@@ -252,13 +207,11 @@
             ctx.lineWidth = 2;
             ctx.stroke();
             
-            // Крыло
             ctx.fillStyle = '#ffaa00';
             ctx.beginPath();
             ctx.ellipse(-bird.radius*0.3, bird.radius*0.1, bird.radius*0.5, bird.radius*0.3, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Глаз
             ctx.fillStyle = 'white';
             ctx.beginPath();
             ctx.arc(bird.radius*0.4, -bird.radius*0.3, bird.radius*0.35, 0, Math.PI * 2);
@@ -268,7 +221,6 @@
             ctx.arc(bird.radius*0.5, -bird.radius*0.3, bird.radius*0.15, 0, Math.PI * 2);
             ctx.fill();
             
-            // Клюв
             ctx.fillStyle = '#ff6b35';
             ctx.beginPath();
             ctx.moveTo(bird.radius*0.8, 0);
@@ -282,7 +234,6 @@
         
         function endGame() {
             gameRunning = false;
-            gameOver = true;
             if (animId) cancelAnimationFrame(animId);
             if (tg) tg.HapticFeedback.notificationOccurred('error');
             
@@ -296,7 +247,9 @@
         }
         
         function startGame() {
-            init();
+            initGame();
+            gameRunning = true;
+            overlay.classList.add('hidden');
             loop();
         }
         
@@ -307,21 +260,17 @@
             animId = requestAnimationFrame(loop);
         }
         
-        // Управление
         function handleTap(e) {
             e.preventDefault();
-            if (gameRunning) {
-                jump();
-            }
+            if (gameRunning) jump();
         }
         
         canvas.addEventListener('mousedown', handleTap);
         canvas.addEventListener('touchstart', handleTap, {passive: false});
         startBtn.addEventListener('click', startGame);
         
-        // Начальная отрисовка
-        init();
-        gameRunning = false;
+        // Рисуем начальный экран (без скрытия overlay!)
+        initGame();
         draw();
     </script>
 </body>
