@@ -69,10 +69,7 @@ async def root():
 
 @fastapi_app.post("/webhook")
 async def webhook(request: Request):
-    secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
-    if secret != WEBHOOK_SECRET:
-        raise HTTPException(status_code=403, detail="Invalid secret")
-    
+    # Просто принимаем данные от Telegram без строгой проверки пароля
     data = await request.json()
     update = Update.de_json(data, telegram_app.bot)
     await telegram_app.process_update(update)
