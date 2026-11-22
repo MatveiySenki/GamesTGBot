@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Империя: Армия</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<div class="res-bar" id="resBar"></div>
+<nav id="tabs"></nav>
+</header>
+<main id="content"></main>
+<div id="toast"></div>
+
+<script src="data.js"></script>
+<script src="game.js"></script>
+
+<script>
+// Telegram Web App интеграция
+const tg = window.Telegram?.WebApp;
+if (tg) {
+    tg.ready();
+    tg.expand();
+    
+    // Отправляем данные о прогрессе при важных событиях
+    const originalSave = save;
+    save = function() {
+        originalSave();
+        // Отправляем счёт в бота каждые 30 секунд
+        if (Math.random() < 0.02) {
+            const totalArmy = Object.values(state.army).reduce((a, b) => a + b, 0);
+            const conquered = state.conquered.length;
+            tg.sendData(JSON.stringify({
+                type: 'progress',
+                army: totalArmy,
+                conquered: conquered,
+                gold: Math.floor(state.res.gold)
+            }));
+        }
+    };
+    
+    // Отправляем данные при завоевании
+    const originalEndBattle = endBattle;
+    endBattle = function(win) {
+        originalEndBattle(win);
+        if (win && battleView.type === 'attack') {
+            tg.sendData(JSON.stringify({
+                type: 'conquer',
+                state: battleView.enemyName,
+                army: Object.values(state.army).reduce((a, b) => a + b, 0)
+            }));
+        }
+    };
+}
+</script>
+</body>
+</html>
